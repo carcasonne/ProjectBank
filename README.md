@@ -1,8 +1,7 @@
 # ProjectBank
 
-## Invites
-
-Rasmys Lystrøm and Paulo Tell have been added to the Azure Directory and should have recieved an e-mail on the 21-12/2021 with an invite. 
+This project was developed as part of the third semester subject 'Software Architecture and Design' at the IT University of Copenhagen in the autumn of 2021.
+The project was developed in a group with 5 other developers, and I do not claim sole ownership of the code. 
 
 ## How to Run Program
 
@@ -30,10 +29,6 @@ dotnet run
 ```
 
 ## Tips
-
-### Loading...
-If the program is stuck loading projects after your initial login, try to log out and in again. 
-
 
 ### Invite Supervisor
 If you want to test the feature, here is a list of supervisor mails likely to be in your seeding of the system:
