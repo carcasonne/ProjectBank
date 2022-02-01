@@ -1,0 +1,555 @@
+@page "/Projects/{projectID:int}"
+@using ProjectBank.Infrastructure
+@using ProjectBank.Core
+@using ProjectBank.Core.EF.DTO
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>@title</PageTitle>
+
+            <div class="ProjectHeader">
+                <h1 class="ProjectTitle">@title</h1>
+                <!--Idea is to only show Status to the author of the project-->
+                @if(ProjectStatus == "DRAFT")
+                {
+                    <div class="Status Draft">
+                        <p>@ProjectStatus</p>
+                    </div>
+                }
+                else if(ProjectStatus == "PRIVATE")
+                {
+                    <div class="Status Draft">
+                        <p>@ProjectStatus</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="Status Public">
+                        <p>@ProjectStatus</p>
+                    </div>
+                }
+            </div>
+            <div class="Buffer_20"></div>   
+
+            <div class="row ProjectInfoDisplay">
+
+                <div class="col-md-8 DescriptionContainer">
+                    <div class="DescriptionDisplay">
+
+                        <div class="DescriptionTitle">
+                            <p>Published by <span id="AuthorContainer">@AuthorName</span></p>
+                        </div>  
+
+                        <div class="Description">
+                            <textarea readonly id="ProjectDescription" class="overflow-auto">@Description</textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 AuxInfoContainer">
+
+                    <div class="row TargetGroup">
+                        <h1>Target Group</h1>
+                        <div class="TargetGroupContainer">
+                            <p>@TargetGroup</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="row">
+                            <div class="col-8">
+                                <h1>Collaborators</h1>
+                            </div>
+                            @if(CurrentUser != null && (project.AuthorID == CurrentUser.Id || supervisors.Any(s => s.Id == CurrentUser.Id)))
+                            {
+                            <div class="col-4">
+                                <button type="button" class="btn btn-sm ModalButton" @onclick="() => inviteModal.Open()">Invite</button>  
+                            </div>
+                            }
+                        </div>
+
+                        <div class="CardContainer">
+                            <ul>
+                                @foreach (var element in supervisors)
+                                    {
+                                        @if(element.FirstName != string.Empty)
+                                        {
+                                            <li>
+                                                @(String.Format("{0} {1}", element.FirstName, element.LastName))
+                                            </li>
+                                        }
+                                    }
+                                </ul>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="row h-50">
+
+                            <div class="col-8">
+                                <h1>Students</h1>
+                            </div>
+
+                            <div class="col-4">
+                                <button type="button" class="btn btn-sm ModalButton" @onclick="() => applyModal.Open()">Apply</button>  
+                            </div>
+
+                        </div>
+
+                        <div class="CardContainer">
+                            <ul>
+                                @foreach (var element in students)
+                                {
+                                    @if(element.FirstName != string.Empty)
+                                    {
+                                        <li>
+                                        @(String.Format("{0} {1}", element.FirstName, element.LastName))
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+
+                    </div>
+        
+                    <div class="row">
+                        <h1>Project Tags</h1>
+
+                        <div class="CardContainer">
+                            <ul>
+                                @foreach (var element in tags)
+                                {
+                                    <li>
+                                        @element.Name
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <Modal @ref="inviteModal">
+                <Title>Invite Supervisor</Title>
+
+                <Body>
+                    <p>
+                        Invite a fellow supervisor to collaborate on this project. Note: Collaborators will have full authority over project details, bar deleting the post.
+                    </p>
+                    <div class="form-group">
+                        <label for="InviteFormGroup">Email Address: </label>
+                        <input type="email" class="form-control" id="InviteFormGroupInput" placeholder="name@example.com" @bind="InviteEmail" @onkeypress="ClearInviteStatus">
+                    </div>
+                    @if(InviteStatus != string.Empty)
+                    {
+                        //success
+                        @if(InviteStatus == "Supervisor has been added to the project.")
+                        {
+                            <div class="alert alert-success mt-2" role="alert">
+                                @InviteStatus
+                            </div>
+                        } 
+                        //failure
+                        else
+                        {
+                            <div class="alert alert-danger mt-2" role="alert">
+                                @InviteStatus
+                            </div>
+                        }
+                    }
+                </Body>
+
+                <Footer>
+                    <button type="button" class="btn btn-primary" data-dismiss="inviteModal" @onclick="() => inviteModal.Close()">Close</button>
+                    <button type="button" class="btn btn-success" data-dismiss="inviteModal" @onclick="() => InviteSupervisorAsync()">Invite</button>
+                </Footer>
+
+            </Modal>
+
+            <Modal @ref="applyModal">
+                <Title>Apply for project (not implemented)</Title>
+
+                <Body>
+                    <p>
+                        Are you absolutely sure about this? If you choose to apply for this course, you'll we committed to attend all lectures, go to the exam etc... You could really regret this.
+                    </p>
+                </Body>
+
+                <Footer>
+                    <button type="button" class="btn btn-primary" data-dismiss="applyModal" @onclick="() => applyModal.Close()">Close</button>
+                    <button type="button" class="btn btn-success" data-dismiss="inviteModal" @onclick="() => applyModal.Close()">Apply</button>
+                </Footer>
+
+            </Modal>
+
+            <Modal @ref="confirmDeletionModal">
+                <Title>Delete project</Title>
+
+                <Body>
+                    <p>
+                        Please confirm that you want to delete this project
+                    </p>
+                </Body>
+
+                <Footer>
+                    <button type="button" class="btn btn-primary" data-dismiss="confirmDeletionModal" @onclick="() => confirmDeletionModal.Close()">Cancel</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="confirmDeletionModal" @onclick="Delete">Delete</button>
+                </Footer>
+
+            </Modal>
+
+            @if(CurrentUser != null && project.AuthorID == CurrentUser.Id)
+            {
+                <div class="Buffer_40"></div>
+
+                <a href="Projects/@ProjectId/edit" class="btn btn-primary">Edit Project</a>
+                <a class="btn btn-danger" @onclick="() => confirmDeletionModal.Open()">Delete Project</a>
+            }
+
+        <div class="Buffer_40"></div>
+
+        <div class="RelatedProjectsContainer">
+            <h2>Related projects</h2>
+            <button type="button" class="btn btn-block CustomButton" @onclick="() => ViewRelatedProjects()">Refresh</button>
+            <label class="RelatedProjectsLabel">max
+                <input class="inputNumber" @bind-value="maxRelatedProjects" type="number" name="points" step="10" min="10">
+            </label>
+
+            <div id="RelatedProjectsSwitchLineBreak">
+                <br>
+            </div>
+
+            <span>
+                <label class="RelatedProjectsLabel">Projects from same category:</label>
+                <label class="switch">
+                    <input type="checkbox" @bind="sameCategory">
+                    <span class="slider round"></span>
+                </label>
+            </span>
+            <div class="container">
+
+                <div class="row my-3">
+
+                    @if (!loadingRelatedProjects && !noRelatedProjects)
+                    {
+                        @for (int i = 0; i < relatedProjects.Count(); i++)
+                        {
+                            var relatedProject = relatedProjects[i];
+                            <div class="col-12 col-md-6 col-xl-4 my-3">
+                                <div class="card col project">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <h2 class="card-title col-9">@relatedProject.Title</h2>
+                                            <div class="col-2">
+                                                <a href=""
+                                            class=" nrbtn btn">@relatedProject.UserIDs.Count()/@relatedProject.MaxStudents</a>
+                                            </div>
+                                        </div>
+
+                                        <p class="card-text mb-5 description">@relatedProject.Description</p>
+
+                                        <div class="tagdiv mb-3">
+                                            <ul>
+                                                @foreach (var tag in relatedProject.TagNames)
+                                                {
+                                                    <li class="tag tagbtn mx-1 px-2">@tag</li>
+                                                }
+                                            </ul>
+                                        </div>
+
+                                        <a @onclick="@(e => ChangePageToProject(relatedProject.Id))" class="btn btn-primary footer">@more</a>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    @if (loadingRelatedProjects)
+                    {
+                        <p><em>Loading...</em></p>
+                    }
+                    @if (noRelatedProjects)
+                    {
+                        <p><em>There are no related projects...</em></p>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        Please log in to view project
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string title = "Loading title...";
+    string Description = "Loading description...";
+    string AuthorName = string.Empty;
+    string TargetGroup = "Loading...";
+    string more = "View more";
+    string InviteStatus = string.Empty;
+    string InviteEmail = string.Empty;
+
+    [Parameter]
+    public int? ProjectId { get; set; }
+    private ProjectDTO project;
+    private UserDTO author;
+    private string ProjectStatus;
+    private CategoryDTO category;
+    private List<TagDTO> tags = new List<TagDTO>();
+    private List<UserDTO> supervisors = new List<UserDTO>();
+    private List<UserDTO> students = new List<UserDTO>();
+    private List<ProjectDTO> relatedProjects = new List<ProjectDTO>();
+    private bool loadingRelatedProjects = false;
+    private bool noRelatedProjects = false;
+    private bool sameCategory = true;
+    private int maxRelatedProjects = 10; 
+
+    private UserDTO CurrentUser;
+
+    private Modal inviteModal { get; set; }
+    private Modal applyModal { get; set; }
+    private Modal confirmDeletionModal { get; set; }
+    private IReadOnlyCollection<ProjectReferenceDTO> related;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            this.project = await Http.GetFromJsonAsync<ProjectDTO>($"api/Projects/{ProjectId}");
+            this.tags = await GetTagsDTOs(project.TagIDs).ToListAsync();
+            this.author = await GetUserDTO(project.AuthorID);
+            this.students = await GetStudentsDTOs(project.UserIDs).ToListAsync();
+            this.supervisors = await GetSupervisorsDTOs(project.UserIDs).ToListAsync();
+            this.category = await GetCategoryDTO(project.CategoryID);
+            ViewRelatedProjects();
+            this.CurrentUser = await GetCurrentUser();
+
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception.Message);
+        }
+
+        this.Description = project.Description;
+        this.title = project.Title;
+        this.TargetGroup = category.Title;
+        this.AuthorName = author.FirstName + " " + author.LastName;
+        this.ProjectStatus = project.Status.ToString();
+    }
+
+    private async IAsyncEnumerable<TagDTO> GetTagsDTOs(ICollection<int> tagIds)
+    {
+        foreach (var id in tagIds)
+        {            
+            yield return await Http.GetFromJsonAsync<TagDTO>($"api/Tag/{id}");
+        }
+    }
+
+    private async IAsyncEnumerable<UserDTO> GetSupervisorsDTOs(ICollection<int> userIDs)
+    {
+        Console.WriteLine("Getting supervisors");
+
+        foreach (var userID in userIDs)
+        {
+            Console.WriteLine("Looking at id: " + userID);
+            UserDTO user = new UserDTO(-1, string.Empty, string.Empty, string.Empty, new List<int>());
+            try
+            {
+                user = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Supervisors/{userID}");
+            }
+            catch (Exception e)
+            {
+                //Not a supervisor, skip
+                Console.WriteLine("Expected error: " + e.Message);
+                continue;
+            }
+            yield return user;
+        }
+    }
+
+    private async IAsyncEnumerable<UserDTO> GetStudentsDTOs(ICollection<int> userIDs)
+    {
+        foreach (var userID in userIDs)
+        {
+            UserDTO user = new UserDTO(-1, string.Empty, string.Empty, string.Empty, new List<int>());
+            try
+            {
+                user = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Students/{userID}");
+            }
+            catch (Exception e)
+            {
+                //Not a student, skip
+                Console.WriteLine("Expected error: " + e.Message);
+                continue;
+            }
+            yield return user;
+        }
+    }
+
+    private async Task<UserDTO> GetUserDTO(int userID)
+    {
+        return await Http.GetFromJsonAsync<UserDTO>($"api/Users/Supervisors/{userID}");
+    }
+
+    private async Task<CategoryDTO> GetCategoryDTO(int catID)
+    {
+        return await Http.GetFromJsonAsync<CategoryDTO>($"api/Categories/{catID}");
+    }
+
+    private async void ViewRelatedProjects()
+    {
+        this.noRelatedProjects = false;
+        this.loadingRelatedProjects = true;
+        try
+        {
+            this.related = await GetRelated(project.Id, this.maxRelatedProjects);
+            this.relatedProjects = await ReferenceToProject(related);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception.Message);
+            this.noRelatedProjects = true;
+        }
+        this.loadingRelatedProjects = false;
+        if (this.relatedProjects.Count() == 0) this.noRelatedProjects = true;
+        StateHasChanged();
+    }
+
+    private async Task<IReadOnlyCollection<ProjectReferenceDTO>> GetRelated(int projectID, int size) 
+    {
+        if(sameCategory) return await Http.GetFromJsonAsync<IReadOnlyCollection<ProjectReferenceDTO>>($"api/ProjectReference/{projectID},{size}");
+        else return await Http.GetFromJsonAsync<IReadOnlyCollection<ProjectReferenceDTO>>($"api/ProjectReference/Sorted/{projectID},{size}");
+    }
+
+    private async Task<List<ProjectDTO>> ReferenceToProject(IReadOnlyCollection<ProjectReferenceDTO> dtos)
+        {
+            var list = new List<ProjectDTO>();
+            foreach(var dto in dtos)
+            {
+                list.Add(await Http.GetFromJsonAsync<ProjectDTO>($"api/Projects/{dto.Id}"));
+            }
+            return list;
+        }
+       private async Task<UserDTO> GetCurrentUser()
+    {
+        var AuthState = await authenticationStateTask;
+        var email = AuthState.User.Claims.First(c => c.Type.ToString() == "email").Value; 
+
+        var user = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Mail/{email}");
+
+        return user;
+    }
+
+    //Tags cannot be updated. Project.Tags set to ReadOnlyCollection, requires changes to LSH...
+    private async Task Delete()
+    {
+        ProjectUpdateDTO updateproject = new ProjectUpdateDTO{
+            Id = project.Id,
+            AuthorID = project.AuthorID,
+            Title = project.Title,
+            Description = project.Description,
+            Status = Core.ProjectStatus.DELETED,
+            MaxStudents = project.MaxStudents,
+            CategoryID = project.CategoryID, 
+            BucketIDs = project.BucketIDs,
+            UserIDs = project.UserIDs,
+            TagIDs = project.TagIDs,
+        };
+
+        var response = await Http.PutAsJsonAsync($"api/Projects/Delete/{ProjectId}", updateproject);
+        var responseLSH = await Http.PutAsJsonAsync($"api/ProjectReference/Delete/{ProjectId}", updateproject);
+
+        Console.WriteLine(response.ReasonPhrase);
+
+        if (response.IsSuccessStatusCode)
+        {   
+            var uri = $"{NavigationManager.BaseUri}";
+
+            NavigationManager.NavigateTo(uri);
+        }
+    }
+
+    private void ChangePageToProject(int projectID)
+    {
+        var uri = $"{NavigationManager.BaseUri}Projects/{projectID}";
+        NavigationManager.NavigateTo($"{NavigationManager.BaseUri}Projects");
+        NavigationManager.NavigateTo(uri);
+    }
+
+    private async void InviteSupervisorAsync()
+    {
+        try
+        {
+            var user = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Mail/{InviteEmail}");
+
+            //make sure user is a supervisor
+            var supervisor = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Supervisors/{user.Id}");
+
+            var newProject = new ProjectUpdateDTO{
+                Id = project.Id,
+                AuthorID = project.AuthorID,
+                Title = project.Title,
+                Description = project.Description,
+                Status = project.Status,
+                MaxStudents = project.MaxStudents,
+                CategoryID = project.CategoryID,
+                TagIDs = project.TagIDs,
+                UserIDs = new List<int>(),
+                BucketIDs = project.BucketIDs
+            };
+
+            newProject.UserIDs.Add(supervisor.Id);
+
+            foreach (var item in newProject.UserIDs)
+            {
+                Console.WriteLine("Added: " + supervisor.Id);
+            }
+
+            var response = await Http.PutAsJsonAsync($"api/Projects/{ProjectId}", newProject);
+
+            Console.WriteLine(response.ReasonPhrase);
+
+            if (response.IsSuccessStatusCode)
+            {   
+                InviteStatus = "Supervisor has been added to the project.";
+
+                //this updates the supervisors on the front end untill the project is fetched anew
+                project.UserIDs.Add(supervisor.Id);
+                this.supervisors = await GetSupervisorsDTOs(project.UserIDs).ToListAsync();
+                StateHasChanged();
+            }        
+        }
+        catch (Exception e)
+        {
+            if(e.Message == "User already added to project" || e.Message == "You can't add yourself to the project")
+            {
+                InviteStatus = e.Message;
+            }
+            else
+            {
+                InviteStatus = "Error while inviting user. Please make sure the email is correct.";
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ClearInviteStatus()
+    {
+        InviteStatus = string.Empty;
+    }
+}

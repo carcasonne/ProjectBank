@@ -1,0 +1,121 @@
+@page "/projects"
+@attribute [AllowAnonymous]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Your Projects</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-2">
+                <h1>Projects</h1>
+            </div>
+        </div>
+            <div class="row">
+                <div class="col-2">
+                 <button class="btn btn-primary align-self-center" @onclick="Create">New</button>
+                 </div>
+            </div>
+    </Authorized>
+    <NotAuthorized>
+         <h1>Projects</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (projects == null)
+{
+    <p><em>Loading...</em></p>
+}
+
+<AuthorizeView>
+    <Authorized>
+        <!-- Row 1 -->
+        <div class="container">
+
+            <div class="row my-3">
+
+                @if(projects.Count() > 0)
+                {
+                    @for(int i = 0; i < projects.Count(); i++)
+                    {
+                        var project = projects[i];
+                        <div class="col-12 col-md-6 col-xl-4 my-3">
+                            <div class="card col project">
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <h2 class="card-title col-9">@project.Title</h2>
+                                        <div class="col-2">
+                                            <a href="" class=" nrbtn btn">@project.UserIDs.Count()/@project.MaxStudents</a>
+                                        </div>
+                                    </div>
+
+                                    <p class="card-text mb-5 description">@project.Description</p>
+
+                                    <div class="tagdiv mb-3">
+                                        <ul>
+                                            @foreach (var tag in project.TagNames)
+                                            {
+                                                <li class="tag tagbtn mx-1 px-1">@tag</li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <a href="Projects/@project.Id" class="btn btn-primary footer">@more</a>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p><em>Loading...</em></p>
+                }
+
+            </div>
+        </div>
+    </Authorized>
+     <NotAuthorized>
+         You must be logged in to see the projects
+     </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string more = "View more";
+    UserDTO user;
+    private List<ProjectDTO> projects = new List<ProjectDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await GetUser();
+            projects = await Http.GetFromJsonAsync<List<ProjectDTO>>($"api/Projects/Count/100/{user.Id}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    private void Create()
+    {
+        var uri = $"{NavigationManager.BaseUri}projects/create";
+
+        NavigationManager.NavigateTo(uri);
+    }
+
+    private async Task<UserDTO> GetUser()
+    {
+        var AuthState = await authenticationStateTask;
+        var email = AuthState.User.Claims.First(c => c.Type.ToString() == "email").Value; 
+
+        var user = await Http.GetFromJsonAsync<UserDTO>($"api/Users/Mail/{email}");
+
+        return user;
+    }
+}

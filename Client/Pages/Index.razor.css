@@ -1,0 +1,72 @@
+.project{
+    background-color:  #153243;
+    color:#B4B8AB;
+    height: 28rem;
+    width: 35rem;
+    width: 100%;
+    border-radius: 10px;
+    display: inline-block;
+ }
+ 
+ .tagbtn{
+     background-color: #F4F9E9;
+ }
+ 
+ 
+ .nrbtn{
+     background-color: #284B63;
+     color:#B4B8AB;
+     cursor: default;
+     border-radius: 10px;
+ }
+ 
+ .tagdiv{
+   overflow: auto;
+   white-space: nowrap;
+ }
+ 
+ .tagdiv ul li{
+   display: inline-block;
+   text-align: center;
+   text-decoration: none;
+   min-width: 120px;
+   min-height: 30px;
+   border-radius: 5mm;
+   align-self: center;
+   color: black;
+ }
+ 
+ .description {
+   height: 100px;
+   overflow-x: auto;
+ }
+ 
+ .footer {
+   position: absolute;
+   bottom: 15px;
+ }
+ 
+ /* width */
+ ::-webkit-scrollbar {
+     width: 20px;
+     height: 10px;
+     border-radius: 2cm;
+   }
+   
+   /* Track */
+   ::-webkit-scrollbar-track {
+     box-shadow: inset 0 0 5px grey;
+     border-radius: 10px;
+   }
+   
+   /* Handle */
+   ::-webkit-scrollbar-thumb {
+     background: #B4B8AB;
+     border-radius: 10px;
+   } 
+ 
+   @media(max-width: 600px){
+       .project{
+           margin-bottom: 30px;
+       }
+   }

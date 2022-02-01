@@ -1,0 +1,367 @@
+
+.ProjectHeader {
+    height: auto;
+    min-height: 80px;
+    width: 100%;
+
+    border-bottom: 1px solid #153243;
+
+    position: relative;
+
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ProjectHeader .ProjectTitle {
+    font-size: 60px;
+
+    height: auto;
+    width: 50%;
+}
+
+.ProjectHeader .Status {
+    position: absolute;
+    right: 0;
+    top: 45%;
+    transform: translateY(-50%);
+
+    width: 100px;
+    height: 50px;
+
+    border-radius: 2mm;
+
+    box-shadow: rgb(38, 57, 77) 0px 10px 10px -10px;
+}
+
+.Status p {
+    position: absolute;
+    left: 18%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+}
+
+.Status.Public {
+    background-color: #5bb105;
+    color: white;
+}
+
+.Status.Deleted {
+    background-color: red;
+    color: white;
+}
+
+.Status.Draft {
+    background-color: gray;
+    color: white;
+}
+
+.AuxInfoContainer {
+    border-left: 4px solid #153243;
+}
+
+.AuxInfoContainer .row {
+    height: auto;
+    width: 100%;
+    padding-bottom: 20px;
+    /*border: 1px dashed red;*/
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.AuxInfoContainer .row h1 {
+    font-size: 20px;
+    float: left;
+}
+
+.DescriptionDisplay {
+    height: 100%; 
+    margin-top: 10px;
+}
+
+.Description {
+   position: relative;
+   height: 100%;
+}
+
+.DescriptionTitle {
+    color:rgb(38, 57, 77);
+    font-size: 20px;
+}
+
+#AuthorContainer {  
+    font-weight: 600;
+}
+
+.DescriptionDisplay #ProjectDescription {
+    width: 100%;
+    height: 90%;
+    margin: 0 auto 0 auto;
+
+    border-radius: 2mm;
+    border: none;
+
+    resize: none;
+}
+
+.CardContainer {
+    max-height: 80px;
+
+    overflow-x: hidden;
+    overflow-y: auto;   
+}
+
+.CardContainer ul {
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.CardContainer ul li {
+    margin-right: 20px;
+    margin-bottom: 10px;
+    min-width: 70px;
+    width: auto;
+    min-height: 20px;
+    text-align: center;
+
+    padding: 5px 10px 5px 10px;
+
+    text-align: center;
+    float: left;
+    display: block;
+
+    flex: 0 0 auto;
+
+    background-color: #d4d8cd;
+    color: black;
+    border-radius: 5mm;
+}
+
+.RelatedProjectsContainer {
+    width: 100%;
+    height: auto;
+}
+
+
+.Buffer_20 {
+    width: 100%;
+    height: 20px;
+}
+
+.Buffer_40 {
+    width: 100%;
+    height: 40px;
+}
+
+.ContractButton {
+    color: white;
+    
+    position: relative;
+    left: 0;
+    bottom: 0;
+}
+
+.CustomButton {
+    background-color:#284B63 !important;
+    color: white !important;
+}
+
+.ModalButton {
+    background-color:#284B63 !important;
+    color: white !important;
+
+    width: 100% !important;
+
+    float: right;
+}
+
+
+.ProjectInfoDisplay {
+    height: auto;
+    width: 100%;
+    margin-left: 5px;
+}
+
+
+
+
+
+.project{
+    background-color:  #153243;
+    color:#B4B8AB;
+    height: 28rem;
+    width: 35rem;
+    width: 100%;
+    border-radius: 10px;
+    display: inline-block;
+ }
+ 
+ .tagbtn{
+     background-color: #F4F9E9;
+ }
+ 
+ 
+ .nrbtn{
+     background-color: #284B63;
+     color:#B4B8AB;
+     cursor: default;
+     border-radius: 10px;
+ }
+ 
+ .tagdiv{
+   overflow: auto;
+   white-space: nowrap;
+ }
+ 
+ .tagdiv ul li{
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    min-width: 120px;
+    min-height: 30px;
+    border-radius: 5mm;
+    align-self: center;
+    color: black;
+  }
+ 
+ .description {
+   height: 100px;
+   overflow-x: auto;
+ }
+ 
+ .footer {
+   position: absolute;
+   bottom: 15px;
+ }
+ 
+ /* width */
+ ::-webkit-scrollbar {
+     width: 20px;
+     height: 10px;
+     border-radius: 2cm;
+   }
+   
+   /* Track */
+   ::-webkit-scrollbar-track {
+     box-shadow: inset 0 0 5px grey;
+     border-radius: 10px;
+   }
+   
+   /* Handle */
+   ::-webkit-scrollbar-thumb {
+     background: #B4B8AB;
+     border-radius: 10px;
+   } 
+
+   .inputNumber {
+       width: 60px;
+   }
+
+   .RelatedProjectsLabel {
+       font-size: large;
+       margin-right: 30px;
+       margin-left: 20px;
+   }
+
+   #RelatedProjectsSwitchLineBreak {
+        display: none;
+   }
+
+   
+   .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+  }
+  
+  .switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 23px;
+    width: 23px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #153243;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #153243;
+  }
+  
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 30px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+
+
+ 
+   @media(max-width: 600px){
+       .project{
+           margin-bottom: 30px;
+       }
+   }
+
+   @media only screen and (max-width: 1000px) {
+    .DescriptionDisplay #ProjectDescription {
+        height: 300px;
+    }
+
+    .AuxInfoContainer {
+        width: 100%;
+        margin: 0 0 0 0;
+
+        border: none;
+    }
+
+    .ProjectHeader .ProjectTitle {
+        font-size: 30px;
+    }
+
+    .ProjectInfoDisplay {
+        height: auto;
+    }
+
+    #RelatedProjectsSwitchLineBreak {
+        display: block;
+    }
+
+}

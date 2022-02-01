@@ -1,0 +1,45 @@
+.TagContainer {
+    height: 100px;
+
+    position: relative;
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+.TagContainer ul {
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+
+    overflow-y: hidden;
+    overflow-x: auto;
+
+    display: flex;
+    flex-wrap: nowrap;
+
+    height: auto;
+}
+
+.TagContainer ul li {
+    margin-right: 20px;
+    margin-bottom: 10px;
+    min-width: 60px;
+    text-align: center;
+    float: left;
+    display: block;
+
+    flex: 0 0 auto;
+
+    background-color: #F4F9E9;
+    color: black;
+    border-radius: 5mm;
+
+    padding: 5px 10px 5px 10px;
+}
+
+.Buffer_20 {
+    height: 50px;
+}
+
+.CategoryContainer {
+    Width: 50%;
+}

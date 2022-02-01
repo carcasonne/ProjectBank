@@ -1,0 +1,1 @@
+global using ProjectBank.Core.EF.DTO;

@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        Hello, @context.User.Identity?.Name!
+        <button class="nav-link btn btn-link" @onclick="BeginLogout">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <button class="nav-link btn btn-link" @onclick="BeginLogin">Log in</button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private async Task BeginLogout(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
+
+    private async Task BeginLogin(MouseEventArgs args)
+    {
+        Navigation.NavigateTo("authentication/login");
+
+        await StoreUser();
+    }
+
+    private async Task StoreUser()
+    {
+        //Not exactly beautiful code... But it works
+        try
+        {
+            var authorized = false;
+
+            while(!authorized)
+            {
+                try
+                {
+                    //see if it is possible to get email without an error being thrown
+                    var authState = await authenticationStateTask;
+                    var mail = authState.User.Claims.First(c => c.Type.ToString() == "email").Value;
+                    authorized = true;
+                } 
+                catch (Exception e)
+                {
+                    Console.WriteLine("Waiting");
+                    Console.WriteLine(e.StackTrace);
+                    //wait a bit to prevent site from freezing
+                    await Task.Delay(1000);
+                }
+            }
+            Console.WriteLine("Done waiting");
+
+            var AuthState = await authenticationStateTask;
+
+            var _Email = AuthState.User.Claims.First(c => c.Type.ToString() == "email").Value;
+
+            var names = AuthState.User.Claims.First(c => c.Type.ToString() == "name").Value.Split(' ');
+            var _FirstName = names[0];
+            var _LastName = string.Empty;
+            for (int i = 1; i < names.Count(); i++)
+            {
+                _LastName += " " + names[i];
+            }
+
+            var _FacultyName = "Computer Science";
+            var _InstitutionName = "ITU";
+
+            //assume user to be a student, doesn't matter since roles are not implemented
+            var supervisor = new SupervisorCreateDTO
+            {
+                Email = _Email,
+                FirstName = _FirstName,
+                LastName = _LastName,
+                FacultyName = _FacultyName,
+                InstitutionName = _InstitutionName,
+                ProjectIDs = new List<int>(),
+                AuthoredProjectIDs = new List<int>()
+            };
+
+            var tagResponse = await Http.PostAsJsonAsync("api/Users/Supervisors", supervisor);
+
+            //add to project to post
+            if (tagResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Successfully created user");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
+        }
+    }
+}
